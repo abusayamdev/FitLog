@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { Workout } from "@/types/workout";
+import Link from "next/link";
 
 export default function WorkoutCard({
     workout,
@@ -7,7 +8,9 @@ export default function WorkoutCard({
     workout: Workout;
 }) {
     return (
-        <article className="overflow-hidden rounded-xl border border-white/10 bg-[#15161a]">
+        <Link 
+            href={`/workouts/${workout.id}`}
+        className="overflow-hidden rounded-xl border border-white/10 bg-[#15161a]">
 
             {/* Image */}
             <div className="aspect-[16/10] bg-white/5">
@@ -75,6 +78,6 @@ export default function WorkoutCard({
 
             </div>
 
-        </article>
+        </Link>
     );
 }

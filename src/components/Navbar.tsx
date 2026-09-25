@@ -1,10 +1,28 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu } from "lucide-react";
 
+const PLAN_STORAGE_KEY = "fitlog-plan";
+const SAVED_STORAGE_KEY = "fitlog-saved";
+
 export default function Navbar() {
+    const [planCount, setPlanCount] = useState(0);
+    const [savedCount, setSavedCount] = useState(0);
+
+    useEffect(() => {
+        const storedPlan = localStorage.getItem(PLAN_STORAGE_KEY);
+        const storedSaved = localStorage.getItem(SAVED_STORAGE_KEY);
+
+        const planItems = storedPlan ? JSON.parse(storedPlan) : [];
+        const savedItems = storedSaved ? JSON.parse(storedSaved) : [];
+
+        setPlanCount(planItems.length);
+        setSavedCount(savedItems.length);
+    }, []);
+
     return (
         <div className="navbar min-h-0 h-16 border-b border-white/10 bg-[#0a0b0d] px-4 shadow-none md:px-8">
 
@@ -25,8 +43,8 @@ export default function Navbar() {
                         tabIndex={-1}
                         className="menu menu-sm dropdown-content z-50 mt-3 w-44 rounded-box border border-white/10 bg-[#15161a] p-2 text-white shadow-xl"
                     >
-                        <li >
-                            <Link href="/#library" >
+                        <li>
+                            <Link href="/#library">
                                 Workouts
                             </Link>
                         </li>
@@ -62,10 +80,9 @@ export default function Navbar() {
 
             {/* CENTER - NAVIGATION */}
             <div className="navbar-center">
-
                 <nav className="hidden items-center gap-2 md:flex">
 
-                    {/* Active */}
+                    {/* Workouts */}
                     <Link
                         href="/#library"
                         className="rounded-full bg-[#ccff00] px-4 py-1.5 text-[10px] font-bold text-black transition hover:bg-[#b8e600]"
@@ -73,7 +90,7 @@ export default function Navbar() {
                         Workouts
                     </Link>
 
-                    {/* Normal */}
+                    {/* My Plan */}
                     <Link
                         href="/my-plan"
                         className="rounded-full px-3 py-1.5 text-[10px] font-medium text-white/50 transition hover:bg-white/5 hover:text-white"
@@ -82,7 +99,6 @@ export default function Navbar() {
                     </Link>
 
                 </nav>
-
             </div>
 
             {/* RIGHT - COUNTERS */}
@@ -91,24 +107,24 @@ export default function Navbar() {
                 {/* Plan */}
                 <Link
                     href="/my-plan"
-                    className="flex items-center gap-1.5 text-[18px] text-white/70 transition hover:text-white"
+                    className="flex items-center gap-1.5 text-[10px] text-white/70 transition hover:text-white"
                 >
                     <span>Plan</span>
 
-                    <span className="badge badge-xs border-0 bg-[#ccff00] px-1.5 text-[12px] font-bold text-black">
-                        0
+                    <span className="badge badge-xs border-0 bg-[#ccff00] px-1.5 text-[8px] font-bold text-black">
+                        {planCount}
                     </span>
                 </Link>
 
                 {/* Saved */}
                 <Link
                     href="/my-plan"
-                    className="flex items-center gap-1.5 text-[18px] text-white/50 transition hover:text-white"
+                    className="flex items-center gap-1.5 text-[10px] text-white/50 transition hover:text-white"
                 >
                     <span>Saved</span>
 
-                    <span className="badge badge-xs border border-white/15 bg-transparent px-1.5 text-[18px] text-white/60">
-                        0
+                    <span className="badge badge-xs border border-white/15 bg-transparent px-1.5 text-[8px] text-white/60">
+                        {savedCount}
                     </span>
                 </Link>
 
