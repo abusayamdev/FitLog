@@ -1,19 +1,25 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import WorkoutCard from "./WorkoutCard";
 import { getWorkouts } from "@/lib/api";
+import { Workout } from "@/types/workout";
 
 const WorkoutLibrary = () => {
+
+    const [workouts, setWorkouts] = useState<Workout[]>([]);
+
     useEffect(() => {
         getWorkouts().then((data) => {
-            console.log(data);
+
+            setWorkouts(data);
         });
+
     }, []);
 
     return (
         <section id="library">
-            <div className="fitlog-container py-12">
+            <div className="fitlog-container py-12 px-4">
 
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#ccff00]">
                     The Library
@@ -29,7 +35,12 @@ const WorkoutLibrary = () => {
 
                 {/* Workout Grid */}
                 <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                    <WorkoutCard />
+                    {workouts.map((workout) => (
+                        <WorkoutCard
+                            key={workout.id}
+                            workout={workout}
+                        />
+                    ))}
                 </div>
 
             </div>

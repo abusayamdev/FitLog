@@ -3,7 +3,7 @@ export type Workout = {
     name: string;
     image: string;
     muscleGroups: string[];
-    equipment: string[];
+    equipment: string;
     difficulty: string;
     duration: number;
     caloriesBurned: number;
