@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Trash2 } from "lucide-react";
+import { toast } from "react-toastify";
 
 import Navbar from "@/components/Navbar";
 import type { Workout } from "@/types/workout";
@@ -10,45 +11,77 @@ import type { Workout } from "@/types/workout";
 const PLAN_STORAGE_KEY = "fitlog-plan";
 const SAVED_STORAGE_KEY = "fitlog-saved";
 const COMPLETED_STORAGE_KEY = "fitlog-completed";
+const STORAGE_UPDATE_EVENT = "fitlog-storage-update";
 
 export default function MyPlanPage() {
-    
     const [workouts, setWorkouts] = useState<Workout[]>([]);
     const [savedWorkouts, setSavedWorkouts] = useState<Workout[]>([]);
     const [completedIds, setCompletedIds] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState<"today" | "saved">("today");
 
     useEffect(() => {
+        const loadData = () => {
+            const storedPlan = localStorage.getItem(
+                PLAN_STORAGE_KEY
+            );
 
-        const storedPlan = localStorage.getItem(PLAN_STORAGE_KEY);
-        const storedSaved = localStorage.getItem(SAVED_STORAGE_KEY);
-        const storedCompleted = localStorage.getItem(
-            COMPLETED_STORAGE_KEY
+            const storedSaved = localStorage.getItem(
+                SAVED_STORAGE_KEY
+            );
+
+            const storedCompleted = localStorage.getItem(
+                COMPLETED_STORAGE_KEY
+            );
+
+            const plan: Workout[] = storedPlan
+                ? JSON.parse(storedPlan)
+                : [];
+
+            const saved: Workout[] = storedSaved
+                ? JSON.parse(storedSaved)
+                : [];
+
+            const completed: string[] = storedCompleted
+                ? JSON.parse(storedCompleted)
+                : [];
+
+            setWorkouts(plan);
+            setSavedWorkouts(saved);
+            setCompletedIds(completed);
+        };
+
+        loadData();
+
+        window.addEventListener(
+            STORAGE_UPDATE_EVENT,
+            loadData
         );
 
-        const plan: Workout[] = storedPlan
-            ? JSON.parse(storedPlan)
-            : [];
+        window.addEventListener("storage", loadData);
 
-        const saved: Workout[] = storedSaved
-            ? JSON.parse(storedSaved)
-            : [];
+        return () => {
+            window.removeEventListener(
+                STORAGE_UPDATE_EVENT,
+                loadData
+            );
 
-        const completed: string[] = storedCompleted
-            ? JSON.parse(storedCompleted)
-            : [];
-
-        setWorkouts(plan);
-        setSavedWorkouts(saved);
-        setCompletedIds(completed);
+            window.removeEventListener(
+                "storage",
+                loadData
+            );
+        };
     }, []);
 
+    /* MARK AS DONE */
     const markAsDone = (id: string) => {
         if (completedIds.includes(id)) {
             return;
         }
 
-        const updatedCompleted = [...completedIds, id];
+        const updatedCompleted = [
+            ...completedIds,
+            id,
+        ];
 
         setCompletedIds(updatedCompleted);
 
@@ -56,11 +89,22 @@ export default function MyPlanPage() {
             COMPLETED_STORAGE_KEY,
             JSON.stringify(updatedCompleted)
         );
+
+        window.dispatchEvent(
+            new Event(STORAGE_UPDATE_EVENT)
+        );
+
+        toast.success("Workout marked as completed.");
     };
 
+    /* REMOVE FROM PLAN */
     const removeWorkout = (id: string) => {
+        const workout = workouts.find(
+            (item) => item.id === id
+        );
+
         const updatedPlan = workouts.filter(
-            (workout) => workout.id !== id
+            (item) => item.id !== id
         );
 
         setWorkouts(updatedPlan);
@@ -80,11 +124,24 @@ export default function MyPlanPage() {
             COMPLETED_STORAGE_KEY,
             JSON.stringify(updatedCompleted)
         );
+
+        window.dispatchEvent(
+            new Event(STORAGE_UPDATE_EVENT)
+        );
+
+        toast.success(
+            `${workout?.name ?? "Workout"} removed from today's plan.`
+        );
     };
 
+    /* REMOVE FROM SAVED */
     const removeSavedWorkout = (id: string) => {
+        const workout = savedWorkouts.find(
+            (item) => item.id === id
+        );
+
         const updatedSaved = savedWorkouts.filter(
-            (workout) => workout.id !== id
+            (item) => item.id !== id
         );
 
         setSavedWorkouts(updatedSaved);
@@ -93,15 +150,26 @@ export default function MyPlanPage() {
             SAVED_STORAGE_KEY,
             JSON.stringify(updatedSaved)
         );
+
+        window.dispatchEvent(
+            new Event(STORAGE_UPDATE_EVENT)
+        );
+
+        toast.success(
+            `${workout?.name ?? "Workout"} removed from saved.`
+        );
     };
 
+    /* METRICS */
     const totalMinutes = workouts.reduce(
-        (total, workout) => total + workout.duration,
+        (total, workout) =>
+            total + workout.duration,
         0
     );
 
     const totalCalories = workouts.reduce(
-        (total, workout) => total + workout.caloriesBurned,
+        (total, workout) =>
+            total + workout.caloriesBurned,
         0
     );
 
@@ -115,11 +183,9 @@ export default function MyPlanPage() {
             <Navbar />
 
             <main className="min-h-screen bg-[#0d0f12] text-white">
-
                 {/* HEADER */}
                 <section className="border-b border-white/5">
                     <div className="fitlog-container py-10">
-
                         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#ccff00]">
                             Your Workout Plan
                         </p>
@@ -131,15 +197,12 @@ export default function MyPlanPage() {
                         <p className="mt-3 max-w-md text-sm leading-6 text-white/45">
                             Cap of five lifts for today. Finish them, then load more.
                         </p>
-
                     </div>
                 </section>
 
                 <div className="fitlog-container py-8">
-
                     {/* METRICS */}
                     <div className="grid grid-cols-3 gap-3">
-
                         <Metric
                             label="Exercises"
                             value={workouts.length}
@@ -154,12 +217,10 @@ export default function MyPlanPage() {
                             label="Calories"
                             value={totalCalories}
                         />
-
                     </div>
 
                     {/* TABS */}
                     <div className="mt-8 flex w-fit rounded-lg border border-white/10 bg-[#15161a] p-1">
-
                         <button
                             type="button"
                             onClick={() => setActiveTab("today")}
@@ -181,13 +242,11 @@ export default function MyPlanPage() {
                         >
                             Saved
                         </button>
-
                     </div>
 
                     {/* EMPTY STATE */}
                     {activeWorkouts.length === 0 ? (
                         <div className="mt-8 rounded-xl border border-white/10 bg-[#15161a] px-6 py-16 text-center">
-
                             <p className="text-xs font-black uppercase tracking-[0.18em] text-[#ccff00]">
                                 Nothing Here Yet
                             </p>
@@ -205,16 +264,13 @@ export default function MyPlanPage() {
                                 Go to workouts
                                 <ArrowRight size={14} />
                             </Link>
-
                         </div>
                     ) : (
                         /* WORKOUT LIST */
                         <div className="mt-8 space-y-3">
-
                             {activeWorkouts.map((workout) => {
-                                const isCompleted = completedIds.includes(
-                                    workout.id
-                                );
+                                const isCompleted =
+                                    completedIds.includes(workout.id);
 
                                 return (
                                     <article
@@ -224,7 +280,6 @@ export default function MyPlanPage() {
                                                 : "border-white/10"
                                             }`}
                                     >
-
                                         {/* IMAGE */}
                                         <img
                                             src={workout.image}
@@ -234,9 +289,7 @@ export default function MyPlanPage() {
 
                                         {/* INFO */}
                                         <div className="min-w-0 flex-1">
-
                                             <div className="flex items-center gap-2">
-
                                                 <h2
                                                     className={`truncate text-sm font-black uppercase ${isCompleted
                                                             ? "text-white/50 line-through"
@@ -251,7 +304,6 @@ export default function MyPlanPage() {
                                                         Done
                                                     </span>
                                                 )}
-
                                             </div>
 
                                             <p className="mt-1 text-[11px] text-white/35">
@@ -259,7 +311,6 @@ export default function MyPlanPage() {
                                             </p>
 
                                             <div className="mt-3 flex flex-wrap gap-4 text-[9px] uppercase tracking-wide text-white/35">
-
                                                 <span>
                                                     {workout.duration} min
                                                 </span>
@@ -271,14 +322,11 @@ export default function MyPlanPage() {
                                                 <span>
                                                     {workout.sets} sets
                                                 </span>
-
                                             </div>
-
                                         </div>
 
                                         {/* ACTIONS */}
                                         <div className="flex flex-wrap items-center gap-2">
-
                                             <Link
                                                 href={`/workouts/${workout.id}`}
                                                 className="rounded-lg border border-white/10 px-3 py-2 text-[9px] font-bold uppercase text-white/60 transition hover:bg-white/5 hover:text-white"
@@ -286,6 +334,7 @@ export default function MyPlanPage() {
                                                 View Details
                                             </Link>
 
+                                            {/* MARK DONE */}
                                             {activeTab === "today" && (
                                                 <button
                                                     type="button"
@@ -306,37 +355,34 @@ export default function MyPlanPage() {
                                                 </button>
                                             )}
 
+                                            {/* REMOVE */}
                                             <button
                                                 type="button"
                                                 onClick={() =>
                                                     activeTab === "today"
                                                         ? removeWorkout(workout.id)
-                                                        : removeSavedWorkout(workout.id)
+                                                        : removeSavedWorkout(
+                                                            workout.id
+                                                        )
                                                 }
                                                 className="rounded-lg border border-white/10 p-2 text-white/35 transition hover:border-red-500/30 hover:text-red-400"
                                                 aria-label={`Remove ${workout.name}`}
                                             >
                                                 <Trash2 size={14} />
                                             </button>
-
                                         </div>
-
                                     </article>
                                 );
                             })}
-
                         </div>
                     )}
-
                 </div>
             </main>
         </>
     );
 }
 
-/* -------------------------------- */
 /* METRIC */
-/* -------------------------------- */
 
 function Metric({
     label,
@@ -347,7 +393,6 @@ function Metric({
 }) {
     return (
         <div className="rounded-xl border border-white/10 bg-[#15161a] p-4">
-
             <p className="text-[9px] font-bold uppercase tracking-wide text-white/30">
                 {label}
             </p>
@@ -355,7 +400,6 @@ function Metric({
             <p className="mt-2 text-2xl font-black text-white">
                 {value}
             </p>
-
         </div>
     );
 }

@@ -1,7 +1,7 @@
 import Image from "next/image";
-import { Bookmark, CalendarPlus } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
+import WorkoutActions from "@/components/WorkoutActions";
 import { getWorkoutById } from "@/lib/api";
 
 type WorkoutDetailsPageProps = {
@@ -21,12 +21,10 @@ export default async function WorkoutDetailsPage({
         <main className="min-h-screen bg-[#0d0f12] text-white">
             <Navbar />
 
-            {/* MAIN */}
             <section className="border-b border-white/5">
                 <div className="mx-auto max-w-[980px] px-5 py-9 md:px-0">
                     <div className="grid gap-8 lg:grid-cols-[468px_1fr] lg:gap-11">
-
-                        {/* LEFT - IMAGE */}
+                        {/* IMAGE */}
                         <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-[#15161a]">
                             <Image
                                 src={workout.image}
@@ -38,9 +36,8 @@ export default async function WorkoutDetailsPage({
                             />
                         </div>
 
-                        {/* RIGHT - CONTENT */}
+                        {/* CONTENT */}
                         <div className="flex flex-col">
-
                             {/* TITLE */}
                             <h1 className="text-[32px] font-black uppercase leading-[0.95] tracking-[-0.04em] md:text-[34px]">
                                 {workout.name}
@@ -51,7 +48,7 @@ export default async function WorkoutDetailsPage({
                                 {workout.description}
                             </p>
 
-                            {/* MUSCLE TAGS */}
+                            {/* MUSCLE GROUPS */}
                             <div className="mt-4 flex flex-wrap gap-2">
                                 {workout.muscleGroups.map((muscle) => (
                                     <span
@@ -65,7 +62,6 @@ export default async function WorkoutDetailsPage({
 
                             {/* SPECS */}
                             <div className="mt-5 overflow-hidden rounded-xl border border-white/10 bg-[#15181e]">
-
                                 <SpecRow
                                     label="Equipment"
                                     value={workout.equipment}
@@ -101,7 +97,6 @@ export default async function WorkoutDetailsPage({
                                     value={String(workout.rating)}
                                     last
                                 />
-
                             </div>
 
                             {/* INSTRUCTIONS */}
@@ -111,36 +106,25 @@ export default async function WorkoutDetailsPage({
                                 </h2>
 
                                 <ol className="mt-4 space-y-3">
-                                    {workout.instructions.slice(0, 4).map((instruction, index) => (
-                                        <li
-                                            key={instruction}
-                                            className="flex gap-3 text-[12px] leading-5 text-white/55"
-                                        >
-                                            <span className="shrink-0 text-white/70">
-                                                {index + 1}.
-                                            </span>
+                                    {workout.instructions
+                                        .slice(0, 4)
+                                        .map((instruction, index) => (
+                                            <li
+                                                key={instruction}
+                                                className="flex gap-3 text-[12px] leading-5 text-white/55"
+                                            >
+                                                <span className="shrink-0 text-white/70">
+                                                    {index + 1}.
+                                                </span>
 
-                                            <span>{instruction}</span>
-                                        </li>
-                                    ))}
+                                                <span>{instruction}</span>
+                                            </li>
+                                        ))}
                                 </ol>
                             </div>
 
-                            {/* ACTION BUTTONS */}
-                            <div className="mt-7 flex flex-wrap gap-3">
-
-                                <button className="fitlog-btn rounded-lg px-4 py-2.5 text-[10px]">
-                                    <CalendarPlus size={13} />
-                                    Add to today&apos;s plan
-                                </button>
-
-                                <button className="flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-transparent px-4 py-2.5 text-[10px] font-bold text-white transition hover:border-white/30 hover:bg-white/5">
-                                    <Bookmark size={13} />
-                                    Save for later
-                                </button>
-
-                            </div>
-
+                            {/* ACTIONS */}
+                            <WorkoutActions workout={workout} />
                         </div>
                     </div>
                 </div>
@@ -165,10 +149,6 @@ export default async function WorkoutDetailsPage({
         </main>
     );
 }
-
-
-/* SPEC ROW */
-
 
 function SpecRow({
     label,
