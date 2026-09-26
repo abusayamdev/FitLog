@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 
 import Navbar from "@/components/Navbar";
 import type { Workout } from "@/types/workout";
+import Footer from "@/components/Footer";
 
 const PLAN_STORAGE_KEY = "fitlog-plan";
 const SAVED_STORAGE_KEY = "fitlog-saved";
@@ -378,6 +379,9 @@ export default function MyPlanPage() {
                     )}
                 </div>
             </main>
+
+            {/* Footer */}
+            <Footer></Footer>
         </>
     );
 }

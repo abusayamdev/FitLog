@@ -3,6 +3,8 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import WorkoutActions from "@/components/WorkoutActions";
 import { getWorkoutById } from "@/lib/api";
+import { notFound } from "next/navigation";
+import Footer from "@/components/Footer";
 
 type WorkoutDetailsPageProps = {
     params: Promise<{
@@ -15,7 +17,13 @@ export default async function WorkoutDetailsPage({
 }: WorkoutDetailsPageProps) {
     const { id } = await params;
 
-    const workout = await getWorkoutById(id);
+    let workout;
+
+    try {
+        workout = await getWorkoutById(id);
+    } catch {
+        notFound();
+    }
 
     return (
         <main className="min-h-screen bg-[#0d0f12] text-white">
@@ -130,22 +138,8 @@ export default async function WorkoutDetailsPage({
                 </div>
             </section>
 
-            {/* FOOTER */}
-            <footer className="border-t border-white/5">
-                <div className="mx-auto flex max-w-[980px] items-center justify-between px-5 py-6 md:px-0">
-                    <div className="flex items-center gap-2">
-                        <span className="text-[#ccff00]">⚡</span>
+            <Footer />
 
-                        <span className="text-[10px] font-black tracking-wide">
-                            FITLOG
-                        </span>
-                    </div>
-
-                    <p className="text-[9px] text-white/30">
-                        © 2026 FitLog — Workout Library. Train hard, log honest.
-                    </p>
-                </div>
-            </footer>
         </main>
     );
 }
